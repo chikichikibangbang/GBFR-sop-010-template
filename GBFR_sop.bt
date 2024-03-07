@@ -1,0 +1,92 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: GBFR_sop.bt
+//   Authors: 诸葛不太亮(korone)
+//   Version: 1.0
+//   Purpose: GranblueFantasyRelink .sop file editing
+//  Category: GBFR
+// File Mask: *.sop.*
+//  ID Bytes: 73 6F 70 00
+//   History: 2024.02.23 
+//------------------------------------------------
+
+local int t<hidden=true>,i<hidden=true>;
+
+enum Hashes {
+    //Provided by Nenkai
+    //Granblue Fantasy Relink (incomplete):
+	AxisMove = 0x0A0530081,
+    AxisRoll = 0x61D80537,
+    AxisRollBlend = 0x0B1FFF4E6,
+    CopyRotate = 0x419A6851,
+    YawPitchRotate = 0x448815BE,
+    Unk_426305E9 = 0x426305E9,
+    Unk_6BE3DB64 = 0x6BE3DB64,
+    
+    OutputObject = 0x5B0292DD,
+    InputObject = 0x1B5B0525,
+
+    AxisAngle0 = 0x0F0C45656,
+    AxisAngle1 = 0x87C366C0,
+    AxisAngle2 = 0x1ECA377A,
+    RollRate = 0x72B10DA8,
+    RollRate0 = 0x2CA445F6,
+    RollRate1 = 0x5BA37560,
+    MoveAngle0 = 0x83CC1313,
+    MoveAngle1 = 0x0F4CB2385,
+    MoveOffset = 0x57C13F03,
+    MoveLength = 0x0FB66B61,
+    MoveRange0 = 0x0F583549C,
+    MoveRange1 = 0x8284640A,
+    RotateRate = 0x479150BC,
+    YawRate = 0x0FDE1DC21,
+    PitchRate = 0x3A601413,
+    YawLimit0 = 0x20E2107,
+    YawLimit1 = 0x75091191,
+    PitchLimit0 = 0x7AC1F875,
+    PitchLimit1 = 0x0DC6C8E3, 
+};
+
+struct HEADER {
+    char ID[4];
+    uint version <name="version", format=hex>;
+    uint numBones <name="numBones">;
+    struct {    
+        for (t = 0; t < numBones; t++) {
+            uint BoneOffs <name="Bone Offs", format=hex>;
+        }	
+    } BoneOffs <name="Bone Offs">; 
+};
+
+struct BONEDATA {    
+    for (t = 0; t < header.numBones; t++) {
+        FSeek(header.BoneOffs.BoneOffs[t]);
+        struct {
+            Hashes hasha<name="hasha", format=hex>;
+            ubyte unkn1; 
+            ubyte unkn2;
+            ubyte numGroups <name="numGroups", bgcolor=0x56aaff>;
+            FSkip(1);
+            Hashes hashb<name="hashb", format=hex>; //always DD 92 02 5B ?
+            uint OutputBoneId <name="Output Bone Id", format=hex, bgcolor=0x5656ff>;
+            Hashes hashc<name="hashc", format=hex>; //always 25 05 5B 1B ?
+            uint InputBoneId <name="Input Bone Id", format=hex, bgcolor=0x56ff56>;         
+            
+            for (i = 0; i < numGroups; i++) {
+                struct {
+                    Hashes hash<name="hash", format=hex>;
+                    uint unkn1;
+                    float unkn2; 
+                }Group <name="Group", bgcolor=0x4a2d56>;         
+            }	  
+        } Bone <name="Bone Data">; 
+    }
+};
+
+struct FILE {
+    HEADER header <name="Header">;
+    BONEDATA bonedata <name="Bone Data">;
+};
+
+FILE file <name="SOP File">;
